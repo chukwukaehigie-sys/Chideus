@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>❓ How to Use Med Checker</title>
+  <link rel="stylesheet" href="SimpMedCheck.css" />
+</head>
+<body>
+  <header>
+    <h1>❓ How to Use Med Checker Companion</h1>
+    <button class="gb" onclick="goBack()">🔙 Back to Home</button>
+  </header>
+
+  <main>
+    <section class="how-to-use">
+      <ul>
+        <li><strong>Home:</strong> See your greeting, daily quote, and wellness check-in.</li>
+        <li><strong>Schedule:</strong> View and manage your medication plan.</li>
+        <li><strong>Reminders:</strong> Get alerts for upcoming doses.</li>
+        <li><strong>Emergency:</strong> Access your emergency contact quickly.</li>
+        <li><strong>Settings:</strong> Change language, preferences, and accessibility options.</li>
+        <li><strong>Wellness:</strong> Share how you're feeling today for personalized support.</li>
+      </ul>
+      <button id="speakHowToUseBtn">🔊 Hear Instructions</button>
+    </section>
+  </main>
+
+  <script>
+    function goBack() {
+      window.location.href = "simpmedcheck.html";
+    }
+
+    document.getElementById("speakHowToUseBtn").addEventListener("click", () => {
+      const instructions = `
+        Welcome to Med Checker Companion.
+        Home shows your greeting, daily quote, and wellness check-in.
+        Schedule displays your medication plan.
+        Reminders alert you when it's time to take your meds.
+        Emergency gives you quick access to your emergency contact.
+        Settings lets you change language and preferences.
+        Wellness lets you share how you're feeling today.
+      `;
+      const utterance = new SpeechSynthesisUtterance(instructions);
+      utterance.lang = "en-US";
+      speechSynthesis.speak(utterance);
+    });
+  </script>
+</body>
+</html>

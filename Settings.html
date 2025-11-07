@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings – Med Checker Companion</title>
+  <link rel="stylesheet" href="SimpMedCheck.css" />
+</head>
+<body>
+  <h2>⚙️ Settings</h2>
+
+  <section id="voiceSettings">
+    <h3>🔊 Voice Settings</h3>
+    <label for="voiceToggle">Enable Voice Narration:</label>
+    <input type="checkbox" id="voiceToggle" checked />
+
+    <label for="stopTalkingToggle">Stop Talking:</label>
+    <input type="checkbox" id="stopTalkingToggle" />
+
+    <button id="resumeTalkingBtn">🔈 Resume Talking</button>
+  </section>
+
+  <section id="quietHours">
+    <h3>🌙 Quiet Hours</h3>
+    <label for="quietStart">Start Time:</label>
+    <input type="time" id="quietStart" />
+    <label for="quietEnd">End Time:</label>
+    <input type="time" id="quietEnd" />
+  </section>
+
+  <section id="emergencyEditor">
+    <h3>🚨 Emergency Contact</h3>
+    <form id="emergencyForm">
+      <label for="editName">Name:</label>
+      <input type="text" id="editName" placeholder="Adaobi Okeke" required />
+
+      <label for="editPhone">Phone:</label>
+      <input type="tel" id="editPhone" placeholder="+2348031234567" required />
+
+      <label for="editRelation">Relationship:</label>
+      <input type="text" id="editRelation" placeholder="Daughter" required />
+
+      <button type="submit">💾 Save Contact</button>
+    </form>
+  </section>
+  <button class="gb" onclick="goHome()">🏠 Back to Home</button>
+
+  <script src="Settings.js"></script>
+</body>
+</html>

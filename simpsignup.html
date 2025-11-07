@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="simpsignup.css">
+</head>
+<body>
+  <div class="container">
+      <section class="signup">
+  <h2>📝 Create Your Account</h2>
+  <button onclick="goHome()" class="homeBtn">🏠 Back to Home</button>
+  <form id="signupForm">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" required />
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" required />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" required />
+    <input type="checkbox" onclick="togglePassword()" />
+    <span>Show Password</span>
+
+    <label for="language">Language Preference</label>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="ig">Igbo</option>
+      <option value="yo">Yoruba</option>
+      <option value="ha">Hausa</option>
+    </select>
+
+    <button type="submit">✅ Sign Up</button>
+  </form>
+</section>
+  </div>
+</body>
+<script>
+  function togglePassword() {
+    const passwordInput = document.getElementById("password");
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+    } else {
+      passwordInput.type = "password";
+    }
+  }
+</script>
+</html>

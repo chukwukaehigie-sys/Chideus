@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Medication Table</title>
+  <link rel="stylesheet" href="SimpMedCheck.css">
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      padding: 8px;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+<h2 class="week">Weekly Overview</h2>
+
+<table id="medTable">
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th>Medication</th>
+      <th>Dosage</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><input type="text" placeholder="e.g. Monday"></td>
+      <td><input type="text" placeholder="e.g. Paracetamol"></td>
+      <td><input type="text" placeholder="e.g. 500mg"></td>
+      <td><input type="time"></td>
+      <td><button class="remove-btn" onclick="removeRow(this)">Remove</button></td>
+
+    </tr>
+  </tbody>
+</table>
+
+<br>
+<button onclick="addRow()">➕ Add Row</button>
+
+<script>
+function addRow() {
+  const tableBody = document.getElementById("medTable").getElementsByTagName("tbody")[0];
+  const newRow = document.createElement("tr");
+
+  const cells = [
+    '<input type="text" placeholder="e.g. Tuesday">',
+    '<input type="text" placeholder="e.g. Ibuprofen">',
+    '<input type="text" placeholder="e.g. 200mg">',
+    '<input type="time">'
+  ];
+
+  cells.forEach(cellHTML => {
+    const cell = document.createElement("td");
+    cell.innerHTML = cellHTML;
+    newRow.appendChild(cell);
+  });
+
+  tableBody.appendChild(newRow);
+}
+function removeRow(button) {
+  const row = button.closest("tr");
+  row.remove();
+}
+function addRow() {
+  const tableBody = document.getElementById("medTable").getElementsByTagName("tbody")[0];
+  const newRow = document.createElement("tr");
+
+  const cells = [
+    '<input type="text" placeholder="e.g. Tuesday">',
+    '<input type="text" placeholder="e.g. Ibuprofen">',
+    '<input type="text" placeholder="e.g. 200mg">',
+    '<input type="time">'
+  ];
+
+  cells.forEach(cellHTML => {
+    const cell = document.createElement("td");
+    cell.innerHTML = cellHTML;
+    newRow.appendChild(cell);
+  });
+
+  const removeCell = document.createElement("td");
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "Remove";
+  removeBtn.className = "remove-btn";
+  removeBtn.onclick = function () {
+    removeRow(this);
+  };
+  removeCell.appendChild(removeBtn);
+  newRow.appendChild(removeCell);
+
+  tableBody.appendChild(newRow);
+}
+</script>
+
+</body>
+</html>
