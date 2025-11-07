@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MedMinder</title>
+  <link rel="stylesheet" href="SimpMedCheck.css" />
+  <style>
+    /* Medication Count Badge */
+    .med-count-badge {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+      border-radius: 50%;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 8px;
+      min-width: 20px;
+      height: 20px;
+      text-align: center;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .utility-bar button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    /* Chatbot Styles */
+    .chatbot-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+
+    .chatbot-toggle {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chatbot-toggle:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .chatbot-container {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      width: 380px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+      border: 2px solid #4CAF50;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+    }
+
+    .chatbot-header {
+      background: #4CAF50;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chatbot-header h3 {
+      margin: 0;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chatbot-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5em;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
+
+    .chatbot-close:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .chatbot-messages {
+      height: 320px;
+      overflow-y: auto;
+      padding: 15px;
+      background: #f9f9f9;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      padding: 12px 15px;
+      border-radius: 15px;
+      max-width: 85%;
+      word-wrap: break-word;
+      animation: messageSlide 0.3s ease-out;
+    }
+
+    @keyframes messageSlide {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .user-message {
+      background: #4CAF50;
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 5px;
+    }
+
+    .bot-message {
+      background: white;
+      color: #333;
+      border: 1px solid #e0e0e0;
+      border-bottom-left-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .message p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .chatbot-input {
+      display: flex;
+      padding: 15px;
+      border-top: 1px solid #eee;
+      background: white;
+    }
+
+    .chatbot-input input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 20px;
+      font-size: 14px;
+      margin-right: 10px;
+      transition: border-color 0.3s ease;
+    }
+
+    .chatbot-input input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+
+    .chatbot-input button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .chatbot-input button:hover {
+      background: #45a049;
+    }
+
+    .chatbot-quick-questions {
+      padding: 15px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+    }
+
+    .chatbot-quick-questions p {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: #666;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .quick-question {
+      background: #e8f5e8;
+      border: 1px solid #4CAF50;
+      color: #2c5530;
+      padding: 8px 12px;
+      border-radius: 15px;
+      font-size: 12px;
+      cursor: pointer;
+      margin: 0 5px 8px 0;
+      display: inline-block;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .quick-question:hover {
+      background: #4CAF50;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    /* Added Medications Page Styles */
+    .added-meds-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .medications-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 40px;
+      margin-top: 30px;
+    }
+
+    .medications-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .medication-card {
+      background: white;
+      border: 3px solid #e8f5e8;
+      border-radius: 15px;
+      padding: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+
+    .medication-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      border-color: #4CAF50;
+    }
+
+    .med-details h3 {
+      margin: 0 0 15px 0;
+      color: #2c5530;
+      font-size: 1.4em;
+    }
+
+    .med-details p {
+      margin: 8px 0;
+      color: #555;
+      font-size: 1.1em;
+    }
+
+    .med-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      min-width: 80px;
+    }
+
+    .edit-btn {
+      background: linear-gradient(135deg, #2196F3, #1976D2);
+      color: white;
+    }
+
+    .delete-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+    }
+
+    .edit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+    }
+
+    .delete-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .medications-summary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      height: fit-content;
+    }
+
+    .medications-summary h3 {
+      margin-top: 0;
+      color: white;
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .medications-summary p {
+      font-size: 1.2em;
+      margin: 15px 0;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .no-medications {
+      text-align: center;
+      padding: 60px 40px;
+      background: #f8f9fa;
+      border-radius: 15px;
+      border: 3px dashed #dee2e6;
+      grid-column: 1 / -1;
+    }
+
+    .no-medications p {
+      color: #6c757d;
+      font-size: 1.3em;
+      margin: 0;
+    }
+
+    /* Success message */
+    .success-message {
+      background: #d4edda;
+      border: 2px solid #c3e6cb;
+      color: #155724;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1.1em;
+    }
+
+    /* Section visibility */
+    .utility-section {
+      display: none;
+    }
+    
+    #homeSection {
+      display: block;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .medications-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .medication-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+      
+      .med-actions {
+        align-self: stretch;
+        justify-content: space-between;
+      }
+      
+      .chatbot-container {
+        width: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+<nav class="utility-bar">
+  <button onclick="navigateTo('index.html')">🏠 Home</button>
+  <button onclick="navigateTo('schedule.html')">📅 Schedule</button>
+  <button onclick="navigateTo('Reminder.html')">🔔 Reminders</button>
+  <button onclick="navigateTo('Emergency.html')">📞 Emergency</button>
+  <button onclick="navigateTo('Settings.html')">⚙️ Settings</button>
+  <button onclick="navigateTo('HowtoUse.html')">❓ How to Use</button>
+  <button onclick="showSection('addedSection')">💊 Added Medications</button>
+  <select id="languageSelect" class="language-select">
+    <option value="en">English</option>
+    <option value="ig">Igbo</option>
+    <option value="yo">Yoruba</option>
+    <option value="ha">Hausa</option>
+  </select>
+</nav>
+
+    <h1>👵 MedMinder</h1>
+    <p id="headerGreeting">Welcome, Chidiuso!</p>
+    <p id="headerTime"></p>
+    <p id="dailyQuote"></p>
+    <button id="wellnessBtn">🧘 How are you feeling today?</button>
+  </header>
+
+  <main>
+    <section id="homeSection" class="utility-section">
+      <div class="welcome-message">
+        <h2>Welcome to MedMinder!</h2>
+        <p>Your personal medication management assistant</p>
+      </div>
+
+      <section class="med-list">
+        <h2 id="todaysMedsHeader">🕒 Today's Medications</h2>
+        <ul id="medications">
+          <li>No medications scheduled for today</li>
+        </ul>
+      </section>
+
+      <section class="add-med">
+        <h2 id="addNewMedHeader">➕ Add a New Medication</h2>
+        <form id="medForm">
+          <label for="Day" id="dayLabel">Day</label>
+          <select id="Day" required>
+            <option value="">Select a day</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+            <option value="Everyday">Everyday</option>
+          </select>
+
+          <label for="medName" id="medNameLabel">Medication Name</label>
+          <input id="medName" type="text" placeholder="e.g. Vitamin D" required />
+
+          <label for="dosage" id="dosageLabel">Dosage</label>
+          <input id="dosage" type="text" placeholder="e.g. 500mg" required />
+
+          <label for="time" id="timeLabel">Time to Take</label>
+          <input id="time" type="time" required />
+
+          <button type="submit" id="addMedBtn">Add Medication</button>
+        </form>
+        <div id="pythonOutput" class="output"></div>
+      </section>
+    </section>
+
+    <section id="scheduleSection" class="utility-section" style="display:none;">
+      <h2>📅 Medication Schedule</h2>
+      <p>Your weekly medication schedule will appear here.</p>
+    </section>
+
+    <section id="remindersSection" class="utility-section" style="display:none;">
+      <h2>🔔 Reminders</h2>
+      <p>Reminders and alerts will be shown here.</p>
+    </section>
+
+    <section id="emergencySection" class="utility-section" style="display:none;">
+      <h2>📞 Emergency Contacts</h2>
+      <p>Emergency contact: +234-XXX-XXXX</p>
+    </section>
+
+    <section id="settingsSection" class="utility-section" style="display:none;">
+      <h2>⚙️ Settings</h2>
+      <p>Settings and preferences.</p>
+    </section>
+
+    <section id="howtoUseSection" class="utility-section" style="display:none;">
+      <h2>❓ How to Use</h2>
+      <p>Welcome to MedMinder! Use the navigation bar above to switch between Home, Schedule, Reminders, Emergency, Settings, and view all your added medications. To add a new medication, fill out the form on the Home page. For more help, contact support.</p>
+    </section>
+
+    <section id="addedSection" class="utility-section" style="display:none;">
+      <div class="added-meds-header">
+        <h2 id="addedMedsHeader">💊 All Added Medications</h2>
+        <p id="allMedsDesc">Here are all your medications. You can edit or delete them as needed.</p>
+      </div>
+      
+      <div class="medications-container">
+        <div id="allMedicationsList" class="medications-list">
+          <!-- All medications will be displayed here -->
+        </div>
+        
+        <div class="medications-summary">
+          <h3 id="summaryHeader">📊 Summary</h3>
+          <p id="totalMedsText">Total Medications: <span id="totalMedsCount">0</span></p>
+          <p id="dailyMedsText">Daily Medications: <span id="dailyMedsCount">0</span></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Chatbot Widget -->
+  <div id="chatbotWidget" class="chatbot-widget">
+    <button id="chatbotToggle" class="chatbot-toggle">
+      💬 Med Assistant
+    </button>
+    <div id="chatbotContainer" class="chatbot-container" style="display: none;">
+      <div class="chatbot-header">
+        <h3>🤖 MedMinder Assistant</h3>
+        <button id="chatbotClose" class="chatbot-close">×</button>
+      </div>
+      <div id="chatbotMessages" class="chatbot-messages">
+        <div class="message bot-message">
+          <p>Hello Chidiuso! I'm your MedMinder Assistant. How can I help you today? 😊</p>
+        </div>
+      </div>
+      <div class="chatbot-input">
+        <input type="text" id="chatbotInput" placeholder="Ask about medications, side effects, or health tips..." />
+        <button id="chatbotSend">Send</button>
+      </div>
+      <div class="chatbot-quick-questions">
+        <p>Quick questions:</p>
+        <button class="quick-question" data-question="I'm feeling good today">Feeling good</button>
+        <button class="quick-question" data-question="I'm feeling okay">Feeling okay</button>
+        <button class="quick-question" data-question="I'm not feeling well">Not feeling well</button>
+        <button class="quick-question" data-question="What medications do I have today?">Today's meds</button>
+        <button class="quick-question" data-question="Health tips for seniors">Health tips</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p id="copyright">Med Checker Companion © 2025</p>
+    <p id="designed">Designed with care for older adults | <a href="#" id="privacy">Privacy Policy</a></p>
+  </footer>
+
+  <!-- Scripts -->
+    <script>
+    // Medication storage with error handling
+    let medications = [];
+    try {
+        const storedMeds = localStorage.getItem('medications');
+        if (storedMeds) {
+            medications = JSON.parse(storedMeds);
+        }
+    } catch (error) {
+        console.error('Error loading medications:', error);
+        // Show user-friendly error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Unable to load your medications. Please refresh the page or contact support if the problem persists.';
+        document.body.insertBefore(errorDiv, document.body.firstChild);
+    }
+
+    // ===== NAVIGATION FUNCTIONS =====
+    
+    // Navigation function for external pages
+    function navigateTo(pageUrl) {
+        console.log('Navigating to:', pageUrl);
+        
+        // Save current state before leaving
+        saveCurrentState();
+        
+        // Show loading indicator
+        showLoadingIndicator();
+        
+        // Navigate after a short delay for better UX
+        setTimeout(() => {
+            window.location.href = pageUrl;
+        }, 200);
+    }
+
+    // Show internal sections (only for Home and Added Medications)
+    function showSection(sectionId) {
+        console.log('Showing internal section:', sectionId);
+        
+        // Only handle sections that exist in this page
+        const internalSections = ['homeSection', 'addedSection'];
+        
+        if (!internalSections.includes(sectionId)) {
+            console.log('Section not found in this page:', sectionId);
+            return;
+        }
+        
+        // Hide all sections
+        internalSections.forEach(section => {
+            const element = document.getElementById(section);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+        
+        // Show the requested section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            
+            if (sectionId === 'addedSection') {
+                displayAllMedications();
+            }
+            
+            // Scroll to top for better visibility
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Update active state
+            updateActiveNav(sectionId);
+        }
+    }
+
+    // Update active navigation state
+    function updateActiveNav(activeSection) {
+        // Remove active class from all nav buttons
+        const navButtons = document.querySelectorAll('.utility-bar button');
+        navButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+        
+        // Add active class to current button
+        const activeButton = document.querySelector(`[onclick="showSection('${activeSection}')"]`);
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+    }
+
+    // Loading indicator function
+    function showLoadingIndicator() {
+        const loader = document.createElement('div');
+        loader.id = 'pageLoader';
+        loader.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 1.3em;
+            color: #4CAF50;
+            font-weight: bold;
+        `;
+        loader.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+                <div>Loading page...</div>
+                <div style="font-size: 0.8em; margin-top: 10px; color: #666;">Please wait</div>
+            </div>
+        `;
+        document.body.appendChild(loader);
+    }
+
+    // Remove loading indicator
+    function hideLoadingIndicator() {
+        const loader = document.getElementById('pageLoader');
+        if (loader) {
+            loader.remove();
+        }
+    }
+
+    // Save current state before navigation
+    function saveCurrentState() {
+        try {
+            // Save medications to localStorage
+            if (typeof medications !== 'undefined') {
+                localStorage.setItem('medications', JSON.stringify(medications));
+                console.log('Medications saved successfully');
+            }
+            
+            // Save language preference
+            const languageSelect = document.getElementById('languageSelect');
+            if (languageSelect) {
+                localStorage.setItem('preferredLanguage', languageSelect.value);
+            }
+            
+            // Save any other important state
+            localStorage.setItem('lastSaved', new Date().toISOString());
+            
+        } catch (error) {
+            console.error('Error saving state:', error);
+        }
+    }
+
+    // ===== CORE APPLICATION FUNCTIONS =====
+
+    const translations = {
+      en: {
+        welcome: "Welcome, Chidiuso!",
+        home: "Welcome to MedMinder!",
+        schedule: "Your medication schedule will appear here.",
+        reminders: "Reminders and alerts will be shown here.",
+        emergency: "Emergency contact: +234-XXX-XXXX",
+        settings: "Settings and preferences.",
+        feeling: "🧘 How are you feeling today?",
+        addedMeds: "💊 Added Medications",
+        allMedsDesc: "Here are all your medications. You can edit or delete them as needed.",
+        summary: "📊 Summary",
+        totalMeds: "Total Medications:",
+        dailyMeds: "Daily Medications:",
+        noMeds: "No medications added yet. Add your first medication from the home page!",
+        edit: "Edit",
+        delete: "Delete",
+        confirmDelete: "Are you sure you want to delete this medication?",
+        medAdded: "✅ Medication Added Successfully!",
+        // Chatbot translations
+        chatbotTitle: "🤖 MedMinder Assistant",
+        chatbotPlaceholder: "Ask about medications, side effects, or health tips...",
+        chatbotQuickQuestions: "Quick questions:",
+        chatbotFeelingGood: "Feeling good",
+        chatbotFeelingOkay: "Feeling okay",
+        chatbotNotFeelingWell: "Not feeling well",
+        chatbotTodaysMeds: "Today's meds",
+        chatbotHealthTips: "Health tips",
+        chatbotSend: "Send",
+        // Navigation
+        homeBtn: "🏠 Home",
+        scheduleBtn: "📅 Schedule", 
+        remindersBtn: "🔔 Reminders",
+        emergencyBtn: "📞 Emergency",
+        settingsBtn: "⚙️ Settings",
+        howToUseBtn: "❓ How to Use",
+        addedBtn: "💊 Added Medications",
+        // Form labels
+        dayLabel: "Day",
+        medNameLabel: "Medication Name",
+        dosageLabel: "Dosage",
+        timeLabel: "Time to Take",
+        addMedBtn: "Add Medication",
+        // Sections
+        todaysMeds: "🕒 Today's Medications",
+        addNewMed: "➕ Add a New Medication",
+        // Footer
+        copyright: "Med Checker Companion © 2025",
+        designed: "Designed with care for older adults",
+        privacy: "Privacy Policy"
+      },
+      ig: {
+        welcome: "Nnọọ, Chidiuso!",
+        home: "Nnọọ na MedMinder!",
+        schedule: "Ndepụta ọgwụ gị ga-apụta ebe a.",
+        reminders: "Ncheta na ịdọ aka ná ntị ga-egosipụta ebe a.",
+        emergency: "Kpọtụrụ mberede: +234-XXX-XXXX",
+        settings: "Ntọala na mmasị.",
+        feeling: "🧘 Kedu ka ị si dị taa?",
+        addedMeds: "💊 Ọgwụ ndị agbakwunyere",
+        allMedsDesc: "Lee ọgwụ gị niile. Ị nwere ike dezie ma ọ bụ hichapụ ha dị ka ọ dị mkpa.",
+        summary: "📊 Nchịkọta",
+        totalMeds: "Ngụkọta Ọgwụ:",
+        dailyMeds: "Ọgwụ kwa ụbọchị:",
+        noMeds: "Enwebeghị ọgwụ agbakwunyere. Tinye ọgwụ mbụ gị na ibe ụlọ!",
+        edit: "Dezie",
+        delete: "Hichapụ",
+        confirmDelete: "Ị ji n'aka na ịchọrọ ihichapụ ọgwụ a?",
+        medAdded: "✅ Ọgwụ agbakwunyere nke ọma!",
+        // Chatbot translations
+        chatbotTitle: "🤖 Onye enyemaka MedMinder",
+        chatbotPlaceholder: "Jụọ banyere ọgwụ, mmetụta ọjọọ, ma ọ bụ ndụmọdụ ahụike...",
+        chatbotQuickQuestions: "Ajụjụ ngwa ngwa:",
+        chatbotFeelingGood: "Ọ dị mma",
+        chatbotFeelingOkay: "Ọ dị mma nke ọma",
+        chatbotNotFeelingWell: "Ahụ adịghị mma",
+        chatbotTodaysMeds: "Ọgwụ taa",
+        chatbotHealthTips: "Ndụmọdụ ahụike",
+        chatbotSend: "Ziga",
+        // Navigation
+        homeBtn: "🏠 Ụlọ",
+        scheduleBtn: "📅 Usoro ihe omume",
+        remindersBtn: "🔔 Ncheta",
+        emergencyBtn: "📞 Mberede",
+        settingsBtn: "⚙️ Ntọala",
+        howToUseBtn: "❓ Otu esi eji",
+        addedBtn: "💊 Ọgwụ ndị agbakwunyere",
+        // Form labels
+        dayLabel: "Ụbọchị",
+        medNameLabel: "Aha ọgwụ",
+        dosageLabel: "Usoro",
+        timeLabel: "Oge iwere",
+        addMedBtn: "Tinye ọgwụ",
+        // Sections
+        todaysMeds: "🕒 Ọgwụ taa",
+        addNewMed: "➕ Tinye ọgwụ ọhụrụ",
+        // Footer
+        copyright: "Onye nnyocha ọgwụ © 2025",
+        designed: "Emebere ya maka ndị okenye",
+        privacy: "Amụma nzuzo"
+      },
+      yo: {
+        welcome: "Kaabo, Chidiuso!",
+        home: "Kaabo si MedMinder!",
+        schedule: "Aago oogun rẹ yoo han nibi.",
+        reminders: "Awọn iranti ati awọn ikilọ yoo han nibi.",
+        emergency: "Olubasọrọ pajawiri: +234-XXX-XXXX",
+        settings: "Eto ati awọn ayanfẹ.",
+        feeling: "🧘 Bawo ni o ṣe n rilara loni?",
+        addedMeds: "💊 Awọn oogun ti a fi kun",
+        allMedsDesc: "Eyi ni gbogbo awọn oogun rẹ. O le ṣatunkọ tabi pa wọ ni bi o ti nilo.",
+        summary: "📊 Akopọ",
+        totalMeds: "Lapapọ Awọn oogun:",
+        dailyMeds: "Awọn oogun Ojoojumo:",
+        noMeds: "Ko si oogun ti a fi kun sibẹ. Fi oogun akọkọ rẹ kun lati oju-iwe ile!",
+        edit: "Ṣatunkọ",
+        delete: "Pa",
+        confirmDelete: "Ṣe o da ọ loju pe o fẹ pa oogun yii?",
+        medAdded: "✅ Oogun ti a fi kun ni aṣeyọri!",
+        // Chatbot translations
+        chatbotTitle: "🤖 Alabara MedMinder",
+        chatbotPlaceholder: "Beere nipa oogun, awọn ipa ẹgbin, tabi imọran ilera...",
+        chatbotQuickQuestions: "Awọn ibeere kiakia:",
+        chatbotFeelingGood: "Inu dara",
+        chatbotFeelingOkay: "Inu dara die",
+        chatbotNotFeelingWell: "Ara ko ni dun",
+        chatbotTodaysMeds: "Oogun loni",
+        chatbotHealthTips: "Imọran ilera",
+        chatbotSend: "Firanṣẹ",
+        // Navigation
+        homeBtn: "🏠 Ile",
+        scheduleBtn: "📅 Atokọ",
+        remindersBtn: "🔔 Awọn iranti",
+        emergencyBtn: "📞 Iṣẹlẹ",
+        settingsBtn: "⚙️ Etọ",
+        howToUseBtn: "❓ Bawo ni a ṣe n lo",
+        addedBtn: "💊 Awọn oogun ti a fi kun",
+        // Form labels
+        dayLabel: "Ọjọ",
+        medNameLabel: "Orukọ oogun",
+        dosageLabel: "Ifunni",
+        timeLabel: "Akoko lati mu",
+        addMedBtn: "Fi oogun kun",
+        // Sections
+        todaysMeds: "🕒 Awọn oogun loni",
+        addNewMed: "➕ Fi oogun tuntun kun",
+        // Footer
+        copyright: "Alakoso oogun © 2025",
+        designed: "A ṣe apẹrẹ pẹlu itoju fun awọn agbalagba",
+        privacy: "Ilana ikọkọ"
+      },
+      ha: {
+        welcome: "Barka da zuwa, Chidiuso!",
+        home: "Barka da zuwa MedMinder!",
+        schedule: "Jadawalin magunguna zai bayyana a nan.",
+        reminders: "Tuna da faɗakarwa za su bayyana a nan.",
+        emergency: "Lambar gaggawa: +234-XXX-XXXX",
+        settings: "Saituna da zaɓuɓɓuka.",
+        feeling: "🧘 Yaya kake ji yau?",
+        addedMeds: "💊 Magungunan da aka ƙara",
+        allMedsDesc: "Ga duk magungunan ku. Kuna iya gyara ko share su yadda ake bukata.",
+        summary: "📊 Taƙaitaccen Bayani",
+        totalMeds: "Jimlar Magunguna:",
+        dailyMeds: "Magungunan Yau da Kullum:",
+        noMeds: "Babu magungunan da aka ƙara tukuna. Ƙara maganin ku na farko daga shafin gida!",
+        edit: "Gyara",
+        delete: "Share",
+        confirmDelete: "Shin kuna da tabbacin cewa kuna son share wannan maganin?",
+        medAdded: "✅ An ƙara maganin cikin nasara!",
+        // Chatbot translations
+        chatbotTitle: "🤖 Mataimakin MedMinder",
+        chatbotPlaceholder: "Tambayi game da magunguna, illolin su, ko nasihohin kiwon lafiya...",
+        chatbotQuickQuestions: "Tambayoyi masu sauri:",
+        chatbotFeelingGood: "Ina jin dadi",
+        chatbotFeelingOkay: "Ina jin lafiya",
+        chatbotNotFeelingWell: "Bana jin lafiya",
+        chatbotTodaysMeds: "Magungunan yau",
+        chatbotHealthTips: "Nasihohin kiwon lafiya",
+        chatbotSend: "Aika",
+        // Navigation
+        homeBtn: "🏠 Gida",
+        scheduleBtn: "📅 Jadawali",
+        remindersBtn: "🔔 Tunatarwa",
+        emergencyBtn: "📞 Gaggawa",
+        settingsBtn: "⚙️ Saituna",
+        howToUseBtn: "❓ Yadda ake amfani",
+        addedBtn: "💊 Magungunan da aka ƙara",
+        // Form labels
+        dayLabel: "Rana",
+        medNameLabel: "Sunan Magani",
+        dosageLabel: "Dosage",
+        timeLabel: "Lokacin Shan",
+        addMedBtn: "Ƙara Magani",
+        // Sections
+        todaysMeds: "🕒 Magungunan Yau",
+        addNewMed: "➕ Ƙara Sabon Magani",
+        // Footer
+        copyright: "Mataimakin Binciken Magunguna © 2025",
+        designed: "An tsara shi da kulawa ga tsofaffi",
+        privacy: "Manufar Sirri"
+      }
+    };
+
+    // Update medication count badge
+    function updateMedicationCount() {
+      const medCountBadge = document.getElementById('medCountBadge');
+      if (medCountBadge) {
+        const totalMeds = medications.length;
+        medCountBadge.textContent = totalMeds;
+        
+        if (totalMeds === 0) {
+          medCountBadge.style.display = 'none';
+        } else {
+          medCountBadge.style.display = 'inline-flex';
+        }
+      }
+    }
+
+    function applyTranslation(lang) {
+      const t = translations[lang] || translations["en"];
+      
+      // Store current section visibility
+      const visibleSection = Array.from(document.querySelectorAll('.utility-section'))
+        .find(section => section.style.display === 'block')?.id;
+      
+      // Update all text elements
+      const elements = {
+        // Header (only update text content, not visibility)
+        headerGreeting: t.welcome,
+        homeSection: t.home,
+        wellnessBtn: t.feeling,
+        
+        // Navigation buttons
+        homeBtn: t.homeBtn,
+        scheduleBtn: t.scheduleBtn,
+        remindersBtn: t.remindersBtn,
+        emergencyBtn: t.emergencyBtn,
+        settingsBtn: t.settingsBtn,
+        howToUseBtn: t.howToUseBtn,
+        addedBtn: t.addedBtn,
+        
+        // Section headers
+        todaysMedsHeader: t.todaysMeds,
+        addNewMedHeader: t.addNewMed,
+        
+        // Added medications page
+        addedMedsHeader: t.addedMeds,
+        allMedsDesc: t.allMedsDesc,
+        summaryHeader: t.summary,
+        totalMedsText: t.totalMeds,
+        dailyMedsText: t.dailyMeds
+      };
+
+      // Update elements by ID
+      Object.entries(elements).forEach(([id, text]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      });
+
+      // Update form labels
+      const dayLabel = document.getElementById('dayLabel');
+      const medNameLabel = document.getElementById('medNameLabel');
+      const dosageLabel = document.getElementById('dosageLabel');
+      const timeLabel = document.getElementById('timeLabel');
+      const addMedButton = document.getElementById('addMedBtn');
+      
+      if (dayLabel) dayLabel.textContent = t.dayLabel;
+      if (medNameLabel) medNameLabel.textContent = t.medNameLabel;
+      if (dosageLabel) dosageLabel.textContent = t.dosageLabel;
+      if (timeLabel) timeLabel.textContent = t.timeLabel;
+      if (addMedButton) addMedButton.textContent = t.addMedBtn;
+
+      // Update footer
+      const footerParagraphs = document.querySelectorAll('footer p');
+      if (footerParagraphs[0]) footerParagraphs[0].textContent = t.copyright;
+      if (footerParagraphs[1]) {
+        footerParagraphs[1].innerHTML = `${t.designed} | <a href="#">${t.privacy}</a>`;
+      }
+
+      // Restore section visibility after translation
+      if (visibleSection) {
+        document.querySelectorAll('.utility-section').forEach(section => {
+          section.style.display = section.id === visibleSection ? 'block' : 'none';
+        });
+      }
+    }
+
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Good morning";
+      if (hour < 18) return "Good afternoon";
+      return "Good evening";
+    }
+
+    function updateHeader() {
+      const greeting = getGreeting();
+      document.getElementById("headerGreeting").textContent = `${greeting}, Chidiuso! Let's stay on track with your health today.`;
+
+      const now = new Date();
+      document.getElementById("headerTime").textContent = now.toLocaleString();
+
+      const quotes = [
+        "Your health is your wealth 💙",
+        "Every dose is a step toward strength.",
+        "You're doing great — keep going!",
+        "Small steps, big impact. Take your meds!",
+        "The body knows how to heal — we just need to listen.",
+        "A healthy dose of gratitude is good medicine.",
+        "Medicine is not magic. It's science and care.",
+        "The best medicine is prevention.",
+        "Healing is a team effort.",
+        "Medication is a bridge — not the destination."
+      ];
+      const quote = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById("dailyQuote").textContent = quote;
+    }
+
+    // Display today's medications on home page
+    function displayTodaysMedications() {
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+      const medList = document.getElementById('medications');
+      
+      medList.innerHTML = '';
+      
+      const todaysMeds = medications.filter(med => 
+        med.day.toLowerCase() === today.toLowerCase() || med.day === 'Everyday'
+      );
+      
+      if (todaysMeds.length === 0) {
+        medList.innerHTML = '<li>No medications scheduled for today</li>';
+        return;
+      }
+      
+      todaysMeds.forEach((med, index) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <div class="med-info">
+            <strong>${med.name}</strong> – ${med.dosage} at <em>${med.time}</em>
+          </div>
+        `;
+        medList.appendChild(listItem);
+      });
+    }
+
+    // Display all medications in the Added Medications page
+    function displayAllMedications() {
+      const allMedsList = document.getElementById('allMedicationsList');
+      const totalMedsCount = document.getElementById('totalMedsCount');
+      const dailyMedsCount = document.getElementById('dailyMedsCount');
+      const t = translations[document.getElementById('languageSelect').value] || translations["en"];
+      
+      allMedsList.innerHTML = '';
+      totalMedsCount.textContent = medications.length;
+      
+      // Count daily medications
+      const dailyMeds = medications.filter(med => med.day === 'Everyday').length;
+      dailyMedsCount.textContent = dailyMeds;
+      
+      if (medications.length === 0) {
+        allMedsList.innerHTML = `
+          <div class="no-medications">
+            <p>${t.noMeds}</p>
+          </div>
+        `;
+        return;
+      }
+      
+      medications.forEach((med, index) => {
+        const medCard = document.createElement('div');
+        medCard.className = 'medication-card';
+        medCard.innerHTML = `
+          <div class="med-details">
+            <h3>${med.name}</h3>
+            <p><strong>Dosage:</strong> ${med.dosage}</p>
+            <p><strong>Time:</strong> ${med.time}</p>
+            <p><strong>Day:</strong> ${med.day}</p>
+          </div>
+          <div class="med-actions">
+            <button class="edit-btn" onclick="editMedication(${index})">${t.edit}</button>
+            <button class="delete-btn" onclick="deleteMedication(${index})">${t.delete}</button>
+          </div>
+        `;
+        allMedsList.appendChild(medCard);
+      });
+    }
+
+    // Delete medication function
+    function deleteMedication(index) {
+      const t = translations[document.getElementById('languageSelect').value] || translations["en"];
+      if (confirm(t.confirmDelete)) {
+        medications.splice(index, 1);
+        localStorage.setItem('medications', JSON.stringify(medications));
+        displayTodaysMedications();
+        displayAllMedications();
+        updateMedicationCount();
+      }
+    }
+
+    // Edit medication function
+    function editMedication(index) {
+      const med = medications[index];
+      const newName = prompt("Edit medication name:", med.name);
+      if (newName !== null) {
+        medications[index].name = newName;
+        localStorage.setItem('medications', JSON.stringify(medications));
+        displayTodaysMedications();
+        displayAllMedications();
+      }
+    }
+
+    // ===== INITIALIZATION =====
+
+    // Initialize the app with error handling
+    window.addEventListener("load", () => {
+      console.log('Window loaded - initializing MedMinder');
+      try {
+        // Initialize all functionality first
+        const languageSelect = document.getElementById("languageSelect");
+        if (!languageSelect) {
+          console.error('Language selector not found');
+          return;
+        }
+        
+        // Load preferred language
+        const preferredLang = localStorage.getItem('preferredLanguage') || 'en';
+        languageSelect.value = preferredLang;
+        
+        applyTranslation(preferredLang);
+        displayTodaysMedications();
+        updateHeader();
+        updateMedicationCount();
+        
+        // Show home section by default
+        document.querySelectorAll('.utility-section').forEach(section => {
+          section.style.display = 'none';
+        });
+        document.getElementById('homeSection').style.display = 'block';
+        updateActiveNav('homeSection');
+        
+        // Hide loading indicator if it exists
+        hideLoadingIndicator();
+        
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        // Show user-friendly error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Unable to initialize the application. Please refresh the page or contact support if the problem persists.';
+        document.body.insertBefore(errorDiv, document.body.firstChild);
+      }
+    });
+
+    // Language selector
+    document.getElementById("languageSelect").addEventListener("change", (e) => {
+      applyTranslation(e.target.value);
+    });
+
+    // Wellness button
+    document.getElementById("wellnessBtn").addEventListener("click", () => {
+      const response = prompt("How are you feeling today?");
+      if (!response) return;
+
+      const negativeWords = ["sad", "tired", "angry", "bad", "not good", "depressed", "unwell", "down"];
+      const isNegative = negativeWords.some(word => response.toLowerCase().includes(word));
+
+      if (isNegative) {
+        alert("I'm really sorry you're feeling that way, Chidiuso. You're not alone — and it's okay to take things one step at a time 💙");
+      } else {
+        alert(`Thanks for sharing, Chidiuso. I'm here for you 💙`);
+      }
+    });
+
+    // Medication form handler
+    document.getElementById("medForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const day = document.getElementById("Day").value;
+      const name = document.getElementById("medName").value;
+      const dosage = document.getElementById("dosage").value;
+      const time = document.getElementById("time").value;
+
+      // Create new medication object
+      const newMedication = {
+        day: day,
+        name: name,
+        dosage: dosage,
+        time: time,
+        id: Date.now()
+      };
+
+      // Add to medications array
+      medications.push(newMedication);
+      
+      // Save to localStorage
+      localStorage.setItem('medications', JSON.stringify(medications));
+      
+      // Update displays
+      displayTodaysMedications();
+      updateMedicationCount();
+
+      // Show confirmation
+      const t = translations[document.getElementById('languageSelect').value] || translations["en"];
+      const output = document.getElementById("pythonOutput");
+      output.style.display = "block";
+      output.innerHTML = `
+        <div class="success-message">
+          <strong>${t.medAdded}</strong><br>
+          <strong>${name}</strong> - ${dosage}<br>
+          Time: ${time} on ${day}
+        </div>
+      `;
+
+      // Reset form
+      this.reset();
+      
+      // Hide output after 5 seconds
+      setTimeout(() => {
+        output.style.display = 'none';
+      }, 5000);
+    });
+
+    // Update header every 30 minutes
+    setInterval(updateHeader, 1800000);
+
+    // ===== CHATBOT FUNCTIONALITY =====
+    
+    // Track if we've asked about feelings today
+    function hasAskedAboutFeelingsToday() {
+      const lastAsked = localStorage.getItem('lastFeelingAsk');
+      if (!lastAsked) return false;
+      const today = new Date().toDateString();
+      return lastAsked === today;
+    }
+
+    function setAskedAboutFeelingsToday() {
+      localStorage.setItem('lastFeelingAsk', new Date().toDateString());
+    }
+
+    // Chatbot functionality
+    function initializeChatbot() {
+      const chatbotToggle = document.getElementById('chatbotToggle');
+      const chatbotContainer = document.getElementById('chatbotContainer');
+      const chatbotClose = document.getElementById('chatbotClose');
+      const chatbotSend = document.getElementById('chatbotSend');
+      const chatbotInput = document.getElementById('chatbotInput');
+      const chatbotMessages = document.getElementById('chatbotMessages');
+      const quickQuestions = document.querySelectorAll('.quick-question');
+
+      if (!chatbotToggle || !chatbotContainer) {
+        console.log('Chatbot elements not found');
+        return;
+      }
+
+      // Toggle chatbot
+      chatbotToggle.addEventListener('click', function() {
+        const isOpening = chatbotContainer.style.display === 'none';
+        chatbotContainer.style.display = isOpening ? 'block' : 'none';
+        
+        // Ask about feelings when opening (once per day)
+        if (isOpening && !hasAskedAboutFeelingsToday()) {
+          setTimeout(() => {
+            const lang = document.getElementById('languageSelect').value;
+            const responses = chatbotResponses[lang] || chatbotResponses["en"];
+            addMessage(getRandomResponse(responses.greetings), 'bot');
+            setAskedAboutFeelingsToday();
+          }, 500);
+        }
+      });
+
+      // Close chatbot
+      chatbotClose.addEventListener('click', function() {
+        chatbotContainer.style.display = 'none';
+      });
+
+      // Send message
+      function sendMessage() {
+        const message = chatbotInput.value.trim();
+        if (message) {
+          addMessage(message, 'user');
+          chatbotInput.value = '';
+          setTimeout(() => generateResponse(message), 1000);
+        }
+      }
+
+      chatbotSend.addEventListener('click', sendMessage);
+      chatbotInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      // Quick questions
+      quickQuestions.forEach(button => {
+        button.addEventListener('click', function() {
+          const question = this.getAttribute('data-question');
+          addMessage(question, 'user');
+          setTimeout(() => generateResponse(question), 1000);
+        });
+      });
+
+      // Add message to chat
+      function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.innerHTML = `<p>${text}</p>`;
+        chatbotMessages.appendChild(messageDiv);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+      }
+
+      // Generate bot response
+      function generateResponse(userMessage) {
+        const lang = document.getElementById('languageSelect').value;
+        const responses = chatbotResponses[lang] || chatbotResponses["en"];
+        const lowerMessage = userMessage.toLowerCase();
+        let response;
+
+        // Feeling responses
+        if (lowerMessage.includes('good') || lowerMessage.includes('great') || lowerMessage.includes('excellent') || 
+            lowerMessage.includes('wonderful') || lowerMessage.includes('fantastic') || lowerMessage.includes('amazing') ||
+            userMessage.includes('I\'m feeling good today')) {
+          response = getRandomResponse(responses.feelingGood);
+        } else if (lowerMessage.includes('okay') || lowerMessage.includes('fine') || lowerMessage.includes('alright') || 
+                  lowerMessage.includes('not bad') || lowerMessage.includes('so so') ||
+                  userMessage.includes('I\'m feeling okay')) {
+          response = getRandomResponse(responses.feelingOkay);
+        } else if (lowerMessage.includes('bad') || lowerMessage.includes('sad') || lowerMessage.includes('tired') || 
+                  lowerMessage.includes('not good') || lowerMessage.includes('awful') || lowerMessage.includes('terrible') ||
+                  lowerMessage.includes('depressed') || lowerMessage.includes('anxious') ||
+                  userMessage.includes('I\'m not feeling well')) {
+          response = getRandomResponse(responses.feelingBad);
+        } else if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+          response = getRandomResponse(responses.greetings);
+        } else if (lowerMessage.includes('medication') || lowerMessage.includes('med') || lowerMessage.includes('pill') ||
+                  userMessage.includes("What medications do I have today?")) {
+          response = getRandomResponse(responses.medications);
+        } else if (lowerMessage.includes('side effect') || lowerMessage.includes('symptom') || lowerMessage.includes('feel sick')) {
+          response = getRandomResponse(responses.sideEffects);
+        } else if (lowerMessage.includes('health tip') || lowerMessage.includes('advice') || lowerMessage.includes('tip') ||
+                  userMessage.includes('Health tips for seniors')) {
+          response = getRandomResponse(responses.healthTips);
+        } else if (lowerMessage.includes('today') && lowerMessage.includes('med')) {
+          // Show today's medications
+          const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+          const todaysMeds = medications.filter(med => 
+            med.day.toLowerCase() === today.toLowerCase() || med.day === 'Everyday'
+          );
+          
+          if (todaysMeds.length > 0) {
+            response = `Today's medications (${today}):<br>`;
+            todaysMeds.forEach(med => {
+              response += `• ${med.name} - ${med.dosage} at ${med.time}<br>`;
+            });
+            response += "Don't forget to take them on time! ⏰";
+          } else {
+            response = responses.noMedsToday;
+          }
+        } else if (lowerMessage.includes('add') && lowerMessage.includes('med')) {
+          response = responses.addMedication;
+        } else if (lowerMessage.includes('how are you') || lowerMessage.includes('how do you feel')) {
+          response = "I'm doing great, thank you for asking! I'm here to help you manage your medications and support your health journey 💙";
+        } else {
+          response = getRandomResponse(responses.unknown);
+        }
+
+        addMessage(response, 'bot');
+      }
+
+      function getRandomResponse(responses) {
+        return responses[Math.floor(Math.random() * responses.length)];
+      }
+
+      console.log('Chatbot initialized successfully');
+    }
+
+    // Initialize chatbot when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeChatbot();
+    });
+
+    // Debug logging
+    console.log('MedMinder JavaScript loaded successfully');
+
+  </script>
+</html>
